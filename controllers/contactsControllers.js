@@ -4,6 +4,7 @@ import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
+import { error } from "console";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -34,12 +35,16 @@ export const getOneContact = async (req, res, next) => {
   }
 };
 
-export const deleteContact = async (req, res) => {
-  const result = await contactsService.deleteContact(req.params.id);
-  if (!result) {
-    return res.status(404).json({ message: "Not found" });
+export const deleteContact = async (req, res, next) => {
+  try {
+    const result = await contactsService.deleteContact(req.params.id);
+    if (!result) {
+      throw new HttpError(404, "Not found");
+    }
+    res.json(result);
+  } catch (error) {
+    next(error);
   }
-  res.json(result);
 };
 
 export const createContact = async (req, res, next) => {
