@@ -4,7 +4,6 @@ import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
-import { error } from "console";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -51,7 +50,7 @@ export const createContact = async (req, res, next) => {
   try {
     const { error } = createContactSchema.validate(req.body);
     if (error) {
-      throw new HttpError(400);
+      throw new HttpError(400, error.message);
     }
     const result = await contactsService.createContact(req.body);
 

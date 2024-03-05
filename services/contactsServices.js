@@ -46,12 +46,15 @@ export const updateContact = async (Id, data) => {
     if (index === -1) {
       return null;
     }
+    if (Object.keys(data).length === 0) {
+      throw new HttpError(400, "Body must have at least one field");
+    }
     const updatedContact = { id: contacts[index].id, ...data };
     contacts[index] = updatedContact;
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return updatedContact;
   } catch (error) {
-    throw new HttpError(500, `Failed to update contact: ${error.message}`);
+    throw new HttpError(500, error.message);
   }
 };
 
