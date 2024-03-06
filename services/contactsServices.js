@@ -44,17 +44,23 @@ export const updateContact = async (Id, data) => {
     const contacts = await getAllContacts();
     const index = contacts.findIndex((contact) => contact.id === Id);
     if (index === -1) {
-      return null;
+      throw new HttpError(404, "Not found");
     }
     if (Object.keys(data).length === 0) {
       throw new HttpError(400, "Body must have at least one field");
     }
-    const updatedContact = { id: contacts[index].id, ...data };
+
+    const updatedContact = {
+      id: contacts[index].id,
+      name: data.name || contacts[index].name,
+      email: data.email || contacts[index].email,
+      phone: data.phone || contacts[index].phone,
+    };
     contacts[index] = updatedContact;
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return updatedContact;
   } catch (error) {
-    throw new HttpError(500, error.message);
+    throw new HttpError(400, error.message);
   }
 };
 

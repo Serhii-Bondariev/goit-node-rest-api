@@ -25,7 +25,7 @@ export const getOneContact = async (req, res, next) => {
     const result = await contactsService.getOneContact(id);
 
     if (!result) {
-      throw new HttpError(404, `Contact with id=${id} not found`);
+      throw new HttpError(404, "Not found");
     }
 
     res.json(result);
@@ -50,7 +50,7 @@ export const createContact = async (req, res, next) => {
   try {
     const { error } = createContactSchema.validate(req.body);
     if (error) {
-      throw new HttpError(400, error.message);
+      throw new HttpError(404, error.message);
     }
     const result = await contactsService.createContact(req.body);
 
@@ -64,13 +64,13 @@ export const updateContact = async (req, res, next) => {
   try {
     const { error } = updateContactSchema.validate(req.body);
     if (error) {
-      throw new HttpError(400, error.message);
+      throw new HttpError(404, error.message);
     }
     const { id } = req.params;
     const result = await contactsService.updateContact(id, req.body);
 
     if (!result) {
-      throw new HttpError(404, `Contact with id=${id} not found`);
+      throw new HttpError(404, error.message);
     }
 
     res.json(result);
