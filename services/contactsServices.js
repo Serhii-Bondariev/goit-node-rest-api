@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { nanoid } from "nanoid";
 import HttpError from "../helpers/HttpError.js";
+import { updateContactSchema } from "../schemas/contactsSchemas.js";
 
 const contactsPath = path.resolve("db", "contacts.json");
 
@@ -43,24 +44,40 @@ export const updateContact = async (Id, data) => {
   try {
     const contacts = await getAllContacts();
     const index = contacts.findIndex((contact) => contact.id === Id);
+
+    // Перевірка наявності контакту
     if (index === -1) {
-      throw new HttpError(404, "Not found");
-    }
-    if (Object.keys(data).length === 0) {
-      throw new HttpError(400, "Body must have at least one field");
+      throw new HttpError(404);
     }
 
+    // Валідація JSON даних
+    const { error } = updateContactSchema.validate(data);
+    if (error) {
+      throw new HttpError(400, error.message);
+    }
+
+    // Створення оновленого контакту
     const updatedContact = {
-      id: contacts[index].id,
-      name: data.name || contacts[index].name,
-      email: data.email || contacts[index].email,
-      phone: data.phone || contacts[index].phone,
+      ...contacts[index],
+      ...data,
     };
+
+    // Оновлення контакту в масиві
     contacts[index] = updatedContact;
+
+    // Збереження оновлених контактів у файл
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+
+    // Повернення оновленого контакту
     return updatedContact;
   } catch (error) {
-    throw new HttpError(400, error.message);
+    // Розрізняння та перекидання помилок HttpError
+    if (error instanceof HttpError) {
+      throw error;
+    } else {
+      // Обробка інших несподіваних помилок
+      throw new HttpError(500);
+    }
   }
 };
 
