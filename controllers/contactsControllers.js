@@ -5,7 +5,7 @@ import {
   updateContactSchema,
   favoriteContactSchema,
 } from "../schemas/contactsSchemas.js";
-import mongoose from "mongoose";
+import validateObjectId from "../helpers/objectIdValidator.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -22,17 +22,10 @@ export const getAllContacts = async (req, res, next) => {
 export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.isValidObjectId(id)) {
-      throw new HttpError(404, "Not found");
-    }
-
     const result = await contactsService.getOneContact(id);
-
     if (!result) {
-      throw new HttpError(404, "Not found");
+      throw new HttpError(404, "Contact not found");
     }
-
     res.json(result);
   } catch (error) {
     next(error);
@@ -41,11 +34,6 @@ export const getOneContact = async (req, res, next) => {
 
 export const deleteContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.isValidObjectId(id)) {
-      throw new HttpError(404, "Not found");
-    }
     const result = await contactsService.deleteContact(req.params.id);
     if (!result) {
       throw new HttpError(404, "Contact not found");
@@ -63,6 +51,7 @@ export const createContact = async (req, res, next) => {
       throw new HttpError(400, error.message);
     }
     const result = await contactsService.createContact(req.body);
+    delete result.__v;
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -72,26 +61,18 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      throw new HttpError(404, "Not found");
-    }
-
     if (Object.keys(req.body).length === 0) {
       throw new HttpError(400, "Body must have at least one field");
     }
-
     const { error } = updateContactSchema.validate(req.body);
     if (error) {
       throw new HttpError(400, error.message);
     }
-
     const result = await contactsService.updateContact(id, req.body);
     if (!result) {
-      throw new HttpError(404, "Not found");
+      throw new HttpError(404, "Contact not found");
     }
-
     delete result.__v;
-
     res.json(result);
   } catch (error) {
     next(error);
