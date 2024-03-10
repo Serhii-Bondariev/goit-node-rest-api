@@ -71,15 +71,27 @@ export const createContact = async (req, res, next) => {
 
 export const updateContact = async (req, res, next) => {
   try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      throw new HttpError(404, "Not found");
+    }
+
+    if (Object.keys(req.body).length === 0) {
+      throw new HttpError(400, "Body must have at least one field");
+    }
+
     const { error } = updateContactSchema.validate(req.body);
     if (error) {
       throw new HttpError(400, error.message);
     }
-    const { id } = req.params;
+
     const result = await contactsService.updateContact(id, req.body);
     if (!result) {
-      throw new HttpError(404, "Contact not found");
+      throw new HttpError(404, "Not found");
     }
+
+    delete result.__v;
+
     res.json(result);
   } catch (error) {
     next(error);

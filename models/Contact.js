@@ -15,6 +15,7 @@ const contactSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  __v: { type: Number, select: false }, // Відключаємо поле "__v" відповіді за замовчуванням
 });
 
 const Contact = model("contact", contactSchema);
