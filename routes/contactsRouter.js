@@ -7,6 +7,7 @@ import {
   updateStatusContact,
   updateContact,
 } from "../controllers/contactsControllers.js";
+import validateObjectId from "../helpers/objectIdValidator.js";
 
 const contactsRouter = express.Router();
 
@@ -20,6 +21,6 @@ contactsRouter.post("/", createContact);
 
 contactsRouter.put("/:id", updateContact);
 
-contactsRouter.patch("/:id/favorite", updateStatusContact);
+contactsRouter.patch("/:id/favorite", validateObjectId, updateStatusContact);
 
 export default contactsRouter;

@@ -17,8 +17,8 @@ const contactSchema = new Schema(
       default: false,
     },
   },
-  { versionKey: false }
-); // Встановлюємо опцію versionKey: false
+  { versionKey: false, timestamps: true }
+);
 
 const Contact = model("Contact", contactSchema);
 
