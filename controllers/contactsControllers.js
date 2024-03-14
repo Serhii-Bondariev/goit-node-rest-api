@@ -5,6 +5,7 @@ import {
   updateContactSchema,
   favoriteContactSchema,
 } from "../schemas/contactsSchemas.js";
+
 import mongoose from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {

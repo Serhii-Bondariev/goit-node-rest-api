@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import HttpError from "./HttpError.js";
+import HttpError from "../helpers/HttpError.js";
 
 const validateObjectId = (req, res, next) => {
   const { id } = req.params;
