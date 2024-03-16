@@ -5,16 +5,46 @@ import {
   updateContactSchema,
   favoriteContactSchema,
 } from "../schemas/contactsSchemas.js";
-
+import Contact from "../models/Contact.js";
 import mongoose from "mongoose";
 
-export const getAllContacts = async (req, res, next) => {
+export const getAllContacts = async (req, res) => {
   try {
-    const result = await contactsService.getAllContacts();
-    if (!result) {
-      throw new HttpError(404, "Contacts not found");
-    }
-    res.json(result);
+    // Отримання параметрів пагінації з запиту
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 100; // За замовчуванням 10 записів на сторінку
+
+    // Обчислення значень skip та limit для запиту до бази даних
+    const skip = (page - 1) * limit;
+
+    // Отримання параметра фільтрації за улюбленими контактами
+    const isFavorite = req.query.favorite === "true";
+
+    // Умова для фільтрації за улюбленими контактами
+    const filter = isFavorite ? { favorite: true } : {};
+
+    // Запит до бази даних для отримання контактів з обмеженням за сторінкою, лімітом та фільтром
+    const contacts = await Contact.find(filter).skip(skip).limit(limit);
+
+    // Повернення результатів та інформації про пагінацію у відповідь
+    res.status(200).json({
+      page,
+      limit,
+      totalContacts: contacts.length, // Це може бути змінено на загальну кількість контактів у базі даних
+      contacts,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getFilteredContacts = async (req, res, next) => {
+  try {
+    const favorite = req.query.favorite;
+    const filter = favorite ? { favorite: favorite === "true" } : {};
+    const contacts = await Contact.find(filter).exec();
+
+    res.status(200).json(contacts);
   } catch (error) {
     next(error);
   }
