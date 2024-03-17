@@ -1,25 +1,31 @@
 import express from "express";
 import {
   getAllContacts,
-  getFilteredContacts,
   getOneContact,
   deleteContact,
   createContact,
   updateStatusContact,
   updateContact,
 } from "../controllers/contactsControllers.js";
-import validateObjectId from "../middlewares/validateObjectId.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
+import { authorizeContactAccess } from "../middlewares/contactAuthorizationMiddleware.js"; // Змінили імпорт
+
 import errorHandler from "../helpers/errorHandler.js";
 
 const contactsRouter = express.Router();
 
+contactsRouter.use(authMiddleware);
+
 contactsRouter.get("/", getAllContacts);
-contactsRouter.get("/filter", getFilteredContacts);
 contactsRouter.get("/:id", getOneContact);
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", authorizeContactAccess, deleteContact); // Змінили middleware
 contactsRouter.post("/", createContact);
-contactsRouter.put("/:id", updateContact);
-contactsRouter.patch("/:id/favorite", validateObjectId, updateStatusContact);
+contactsRouter.put("/:id", authorizeContactAccess, updateContact); // Змінили middleware
+contactsRouter.patch(
+  "/:id/favorite",
+  authorizeContactAccess,
+  updateStatusContact
+); // Змінили middleware
 
 contactsRouter.use(errorHandler);
 
