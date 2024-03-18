@@ -1,9 +1,17 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import { userSignupSchema, userSigninSchema } from "./userValidationSchemas.js";
+import HttpError from "../helpers/HttpError.js";
+import "dotenv/config";
 
 export const register = async (req, res) => {
   try {
+    const { error } = userSignupSchema.validate(req.body);
+    if (error) {
+      throw new HttpError(400, error.message);
+    }
+
     const { email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
@@ -25,6 +33,11 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    const { error } = userSigninSchema.validate(req.body);
+    if (error) {
+      throw new HttpError(400, error.message);
+    }
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });

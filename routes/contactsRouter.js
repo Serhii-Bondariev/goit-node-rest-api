@@ -8,7 +8,7 @@ import {
   updateContact,
 } from "../controllers/contactsControllers.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
-import { authorizeContactAccess } from "../middlewares/contactAuthorizationMiddleware.js"; // Змінили імпорт
+import { authorizeContactAccess } from "../middlewares/contactAuthorizationMiddleware.js";
 
 import errorHandler from "../helpers/errorHandler.js";
 
@@ -18,14 +18,14 @@ contactsRouter.use(authMiddleware);
 
 contactsRouter.get("/", getAllContacts);
 contactsRouter.get("/:id", getOneContact);
-contactsRouter.delete("/:id", authorizeContactAccess, deleteContact); // Змінили middleware
+contactsRouter.delete("/:id", authorizeContactAccess, deleteContact);
 contactsRouter.post("/", createContact);
-contactsRouter.put("/:id", authorizeContactAccess, updateContact); // Змінили middleware
+contactsRouter.put("/:id", authorizeContactAccess, updateContact);
 contactsRouter.patch(
   "/:id/favorite",
   authorizeContactAccess,
   updateStatusContact
-); // Змінили middleware
+);
 
 contactsRouter.use(errorHandler);
 
