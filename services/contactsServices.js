@@ -1,6 +1,6 @@
 import Contact from "../models/Contact.js";
 
-const getAllContacts = () => Contact.find();
+const getAllContacts = () => authorizeContactAccess.Contact.find();
 const getOneContact = (id) => Contact.findById(id);
 const createContact = (body) => Contact.create(body);
 const updateContact = (id, body) => Contact.findByIdAndUpdate(id, body);

@@ -10,27 +10,16 @@ import mongoose from "mongoose";
 
 export const getAllContacts = async (req, res) => {
   try {
-    // Отримання параметрів пагінації з запиту
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 100; // За замовчуванням 10 записів на сторінку
-
-    // Обчислення значень skip та limit для запиту до бази даних
+    const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
+    const { _id: owner } = req.user;
+    const contacts = await Contact.find({ owner }).skip(skip).limit(limit);
 
-    // Отримання параметра фільтрації за улюбленими контактами
-    const isFavorite = req.query.favorite === "true";
-
-    // Умова для фільтрації за улюбленими контактами
-    const filter = isFavorite ? { favorite: true } : {};
-
-    // Запит до бази даних для отримання контактів з обмеженням за сторінкою, лімітом та фільтром
-    const contacts = await Contact.find(filter).skip(skip).limit(limit);
-
-    // Повернення результатів та інформації про пагінацію у відповідь
     res.status(200).json({
       page,
       limit,
-      totalContacts: contacts.length, // Це може бути змінено на загальну кількість контактів у базі даних
+      totalContacts: contacts.length,
       contacts,
     });
   } catch (error) {
@@ -40,8 +29,11 @@ export const getAllContacts = async (req, res) => {
 
 export const getFilteredContacts = async (req, res, next) => {
   try {
+    const { _id: owner } = req.user;
     const favorite = req.query.favorite;
-    const filter = favorite ? { favorite: favorite === "true" } : {};
+    const filter = favorite
+      ? { favorite: favorite === "true", owner }
+      : { owner };
     const contacts = await Contact.find(filter).exec();
 
     res.status(200).json(contacts);
@@ -88,18 +80,23 @@ export const deleteContact = async (req, res, next) => {
 };
 
 export const createContact = async (req, res, next) => {
+  const { _id: owner } = req.user;
   try {
-    const { error } = createContactSchema.validate(req.body);
+    const { error, value } = createContactSchema.validate(req.body, {
+      abortEarly: false,
+    });
     if (error) {
-      throw new HttpError(400, error.message);
+      const errorMessage = error.details
+        .map((detail) => detail.message)
+        .join(", ");
+      throw new HttpError(400, errorMessage);
     }
-    const result = await contactsService.createContact(req.body);
+    const result = await contactsService.createContact({ ...value, owner });
     res.status(201).json(result);
   } catch (error) {
     next(error);
   }
 };
-
 export const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -142,7 +139,6 @@ export const updateStatusContact = async (req, res, next) => {
     if (!result) {
       throw new HttpError(404, "Contact not found");
     }
-    res.json(result);
   } catch (error) {
     next(error);
   }

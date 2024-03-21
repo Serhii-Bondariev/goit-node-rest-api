@@ -14,3 +14,4 @@ class HttpError extends Error {
 }
 
 export default HttpError;
+//HttpError.js
