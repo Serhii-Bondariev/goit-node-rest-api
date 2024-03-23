@@ -1,5 +1,5 @@
-// authMiddleware.js
 import jwt from "jsonwebtoken";
+import HttpError from "../helpers/HttpError.js";
 import User from "../models/userModel.js";
 
 const authMiddleware = async (req, res, next) => {
@@ -10,7 +10,9 @@ const authMiddleware = async (req, res, next) => {
     }
 
     try {
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
       const user = await User.findById(decodedToken.userId);
 
       if (!user || user.token !== token) {

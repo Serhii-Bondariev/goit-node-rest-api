@@ -128,7 +128,7 @@ export const updateStatusContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { favorite } = req.body;
-    const { error } = favoriteContactSchema.validate({ favorite });
+    const { error } = favoriteContactSchema.validate(req.body);
     if (error) {
       throw new HttpError(400, error.message);
     }
@@ -139,6 +139,7 @@ export const updateStatusContact = async (req, res, next) => {
     if (!result) {
       throw new HttpError(404, "Contact not found");
     }
+    res.json(result);
   } catch (error) {
     next(error);
   }
