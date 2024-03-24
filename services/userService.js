@@ -134,3 +134,20 @@ export const updateUserSubscription = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateAvatar = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const file = req.file;
+    req.user.avatarURL = file.path;
+    await req.user.save();
+    res.status(200).json({ message: "Avatar updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

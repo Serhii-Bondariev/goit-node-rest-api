@@ -1,5 +1,8 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Jimp from "jimp";
+import path from "path";
+import gravatar from "gravatar";
 import User from "../models/userModel.js";
 import HttpError from "../helpers/HttpError.js";
 import { emailRegex } from "../constants/user-constants.js";
@@ -10,42 +13,55 @@ const register = async (req, res) => {
     if (Object.keys(req.body).length === 0) {
       throw new HttpError(
         400,
-        "Тіло запиту повинно містити принаймні одне поле"
+        "Thee request body must contain at least one field"
       );
     }
+
     const { email, password } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
-    if (!password) {
-      return res.status(400).json({ message: "Password is required" });
-    }
+
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
-    if (typeof password !== "string" || password.trim() === "") {
-      return res
-        .status(400)
-        .json({ message: "Password must be a non-empty string" });
-    }
-    const MIN_PASSWORD_LENGTH = 6;
-    if (password.length < MIN_PASSWORD_LENGTH) {
+
+    const { MIN_PASSWORD_LENGTH } = process.env;
+    if (
+      typeof password !== "string" ||
+      password.trim().length < MIN_PASSWORD_LENGTH
+    ) {
       return res.status(400).json({
-        message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+        message: `Password must be a string with at least ${MIN_PASSWORD_LENGTH} characters`,
       });
     }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email is already in use" });
     }
+
+    const avatarURL = gravatar.url(email, {
+      s: "200",
+      r: "pg",
+      d: "identicon",
+    });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({ email, password: hashedPassword, avatarURL });
     await newUser.save();
+
     res.status(201).json({
-      user: { email: newUser.email, subscription: newUser.subscription },
+      user: {
+        email: newUser.email,
+        subscription: newUser.subscription,
+        avatarURL,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Internal Server Error" });
   }
 };
 
@@ -154,4 +170,36 @@ const updateUserSubscription = async (req, res) => {
   }
 };
 
-export { register, login, logout, getCurrentUser, updateUserSubscription };
+const updateAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    const tempPath = req.file.path;
+    const filename = `${user._id}_${req.file.originalname}`;
+    const targetPath = path.join(process.cwd(), "public", "avatars", filename);
+
+    const image = await Jimp.read(tempPath);
+    await image.resize(250, 250).write(targetPath);
+
+    user.avatarURL = `avatars/${filename}`;
+    await user.save();
+
+    res.status(200).json({ avatarURL: user.avatarURL });
+  } catch (error) {
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Internal Server Error" });
+  }
+};
+
+export {
+  register,
+  login,
+  logout,
+  getCurrentUser,
+  updateUserSubscription,
+  updateAvatar,
+};

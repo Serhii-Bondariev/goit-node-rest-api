@@ -4,10 +4,12 @@ import cors from "cors";
 import mongoose from "mongoose";
 import "dotenv/config";
 import "colors";
-
+import multer from "multer";
+import moment from "moment";
+import "fs";
 import usersRouter from "./routes/usersRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
-
+import upload from "./middlewares/upload.js";
 const { DB_HOST, PORT = 3000 } = process.env;
 
 const app = express();
@@ -15,8 +17,10 @@ const app = express();
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use("/users", usersRouter);
+app.use("/users/avatars", usersRouter, express.static("public"));
 app.use("/api/contacts", contactsRouter);
 
 app.use((_, res) => {
@@ -24,24 +28,6 @@ app.use((_, res) => {
 });
 
 app.use((err, req, res, next) => {
-  if (err.name === "CastError") {
-    return res.status(404).json({ message: "Not found" });
-  }
-
-  if (err.name === "ValidationError") {
-    return res.status(400).json({ message: err.message });
-  }
-
-  if (err.code === 11000) {
-    return res.status(400).json({
-      message: "Email already in use",
-    });
-  }
-
-  if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-
   const { status = 500, message = "Server error" } = err;
   res.status(status).json({ message });
 });
