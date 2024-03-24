@@ -13,7 +13,7 @@ const register = async (req, res) => {
     if (Object.keys(req.body).length === 0) {
       throw new HttpError(
         400,
-        "Thee request body must contain at least one field"
+        "The request body must contain at least one field"
       );
     }
 
@@ -55,6 +55,7 @@ const register = async (req, res) => {
 
     res.status(201).json({
       user: {
+        _id: newUser._id,
         email: newUser.email,
         subscription: newUser.subscription,
         avatarURL,
@@ -64,6 +65,63 @@ const register = async (req, res) => {
     res.status(500).json({ message: error.message || "Internal Server Error" });
   }
 };
+
+// const register = async (req, res) => {
+//   try {
+//     if (Object.keys(req.body).length === 0) {
+//       throw new HttpError(
+//         400,
+//         "Thee request body must contain at least one field"
+//       );
+//     }
+
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//       return res
+//         .status(400)
+//         .json({ message: "Email and password are required" });
+//     }
+
+//     if (!emailRegex.test(email)) {
+//       return res.status(400).json({ message: "Invalid email format" });
+//     }
+
+//     const { MIN_PASSWORD_LENGTH } = process.env;
+//     if (
+//       typeof password !== "string" ||
+//       password.trim().length < MIN_PASSWORD_LENGTH
+//     ) {
+//       return res.status(400).json({
+//         message: `Password must be a string with at least ${MIN_PASSWORD_LENGTH} characters`,
+//       });
+//     }
+
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(409).json({ message: "Email is already in use" });
+//     }
+
+//     const avatarURL = gravatar.url(email, {
+//       s: "200",
+//       r: "pg",
+//       d: "identicon",
+//     });
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const newUser = new User({ email, password: hashedPassword, avatarURL });
+//     await newUser.save();
+
+//     res.status(201).json({
+//       user: {
+//         email: newUser.email,
+//         subscription: newUser.subscription,
+//         avatarURL,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message || "Internal Server Error" });
+//   }
+// };
 
 const login = async (req, res) => {
   try {

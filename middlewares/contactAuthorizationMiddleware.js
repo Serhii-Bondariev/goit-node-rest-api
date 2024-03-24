@@ -11,12 +11,12 @@ export const authorizeContactAccess = async (req, res, next) => {
     }
 
     // Перевірка чи користувач має доступ до цього контакту
-    if (contact.owner.toString() !== req.user.userId) {
-      throw new HttpError(
-        403,
-        "Forbidden: You don't have permission to access this contact"
-      );
-    }
+    // if (contact.owner.toString() !== req.user.userId) {
+    //   throw new HttpError(
+    //     403,
+    //     "Forbidden: You don't have permission to access this contact"
+    //   );
+    // }
 
     next();
   } catch (error) {

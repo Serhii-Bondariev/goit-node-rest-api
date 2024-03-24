@@ -9,7 +9,6 @@ import {
 } from "../controllers/contactsControllers.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { authorizeContactAccess } from "../middlewares/contactAuthorizationMiddleware.js";
-
 import errorHandler from "../helpers/errorHandler.js";
 
 const contactsRouter = express.Router();
