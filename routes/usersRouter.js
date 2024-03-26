@@ -10,10 +10,12 @@ import {
 import authMiddleware from "../middlewares/authMiddleware.js";
 import validateSubscription from "../middlewares/subscriptionValidationMiddleware.js";
 import upload from "../middlewares/upload.js";
+import chkAvaUpload from "../middlewares/chkAvaUpload.js";
 
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/register", upload.single("avatar"), chkAvaUpload, register);
+// router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", authMiddleware, logout);
 router.get("/current", authMiddleware, getCurrentUser);

@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Jimp from "jimp";
+import fs from "fs/promises";
 import path from "path";
 import gravatar from "gravatar";
 import User from "../models/userModel.js";
@@ -230,9 +231,13 @@ const updateUserSubscription = async (req, res) => {
 
 const updateAvatar = async (req, res) => {
   try {
+    if (!req.file) {
+      throw new HttpError(400, "New avatar image is missing");
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) {
-      throw HttpError(404, "User not found");
+      throw new HttpError(404, "User not found");
     }
 
     const tempPath = req.file.path;
@@ -244,6 +249,13 @@ const updateAvatar = async (req, res) => {
 
     user.avatarURL = `avatars/${filename}`;
     await user.save();
+    fs.unlink(tempPath, (err) => {
+      if (err) {
+        console.error("Error deleting file:", err);
+      } else {
+        console.log("File deleted successfully");
+      }
+    });
 
     res.status(200).json({ avatarURL: user.avatarURL });
   } catch (error) {
@@ -252,6 +264,31 @@ const updateAvatar = async (req, res) => {
       .json({ message: error.message || "Internal Server Error" });
   }
 };
+
+// const updateAvatar = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user._id);
+//     if (!user) {
+//       throw HttpError(404, "User not found");
+//     }
+
+//     const tempPath = req.file.path;
+//     const filename = `${user._id}_${req.file.originalname}`;
+//     const targetPath = path.join(process.cwd(), "public", "avatars", filename);
+
+//     const image = await Jimp.read(tempPath);
+//     await image.resize(250, 250).write(targetPath);
+
+//     user.avatarURL = `avatars/${filename}`;
+//     await user.save();
+
+//     res.status(200).json({ avatarURL: user.avatarURL });
+//   } catch (error) {
+//     res
+//       .status(error.status || 500)
+//       .json({ message: error.message || "Internal Server Error" });
+//   }
+// };
 
 export {
   register,

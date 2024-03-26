@@ -6,7 +6,7 @@ import "dotenv/config";
 import "colors";
 import multer from "multer";
 import moment from "moment";
-import "fs";
+import fs from "fs";
 import usersRouter from "./routes/usersRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
 import upload from "./middlewares/upload.js";

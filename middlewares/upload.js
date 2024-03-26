@@ -1,5 +1,6 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import moment from "moment";
 import HttpError from "../helpers/HttpError.js";
 
@@ -38,6 +39,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: filelimits,
+  cleanup: true,
 });
 
 export default upload;
