@@ -11,4 +11,3 @@ const validateSubscription = (req, res, next) => {
 };
 
 export default validateSubscription;
-//subscriptionValidationMiddleware.js

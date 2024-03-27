@@ -3,4 +3,3 @@ export const filterFavoriteContacts = async (req, res, next) => {
   req.filterOptions = favorite ? { favorite } : {};
   next();
 };
-//favoriteFilterMiddleware.js

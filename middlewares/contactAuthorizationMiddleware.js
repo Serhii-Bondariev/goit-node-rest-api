@@ -10,14 +10,6 @@ export const authorizeContactAccess = async (req, res, next) => {
       throw new HttpError(404, "Contact not found");
     }
 
-    // Перевірка чи користувач має доступ до цього контакту
-    // if (contact.owner.toString() !== req.user.userId) {
-    //   throw new HttpError(
-    //     403,
-    //     "Forbidden: You don't have permission to access this contact"
-    //   );
-    // }
-
     next();
   } catch (error) {
     next(error);
